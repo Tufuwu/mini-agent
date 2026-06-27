@@ -32,6 +32,16 @@ interface ChatResponse {
   detail?: string
 }
 
+const modelOptions = [
+  { label: 'GPT-4o', value: 'gpt-4o' },
+  { label: 'deepseek', value: 'deepseek' },
+  { label: 'dashscope', value: 'dashscope' },
+  { label: 'google', value: 'google' },
+  { label: 'anthropic', value: 'anthropic' },
+
+]
+const defaultModel = 'gpt-4o-mini'
+
 const conversations = ref<Conversation[]>([
 
 ])
@@ -39,6 +49,7 @@ const conversations = ref<Conversation[]>([
 const activeConversationId = ref(1)
 const draft = ref('')
 const isSending = ref(false)
+const selectedModel = ref(defaultModel)
 const messages = ref<ChatMessage[]>([
 
 ])
@@ -95,6 +106,7 @@ async function sendMessage() {
       },
       body: JSON.stringify({
         message: content,
+        model: selectedModel.value,
       }),
     })
 
@@ -191,6 +203,13 @@ async function sendMessage() {
 
       <form class="composer" @submit.prevent="sendMessage">
         <input v-model="draft" :disabled="isSending" placeholder="Type a message..." type="text" />
+        <label class="model-select" aria-label="Model">
+          <select v-model="selectedModel" :disabled="isSending">
+            <option v-for="model in modelOptions" :key="model.value" :value="model.value">
+              {{ model.label }}
+            </option>
+          </select>
+        </label>
         <button :disabled="isSending" type="submit">{{ isSending ? 'Sending...' : 'Send' }}</button>
       </form>
     </section>
@@ -386,14 +405,15 @@ async function sendMessage() {
 
 .composer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 160px auto;
   gap: 12px;
   padding: 20px 32px;
   background: #ffffff;
   border-top: 1px solid #d8e1ec;
 }
 
-.composer input {
+.composer input,
+.model-select select {
   min-width: 0;
   height: 42px;
   padding: 0 14px;
@@ -404,13 +424,34 @@ async function sendMessage() {
   font: inherit;
 }
 
+.model-select {
+  min-width: 0;
+}
+
+.model-select select {
+  width: 100%;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #64748b 50%),
+    linear-gradient(135deg, #64748b 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 18px,
+    calc(100% - 12px) 18px;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
 .composer input:disabled,
+.model-select select:disabled,
 .composer button:disabled {
   cursor: wait;
   opacity: 0.7;
 }
 
-.composer input:focus {
+.composer input:focus,
+.model-select select:focus {
   outline: 3px solid rgba(15, 118, 110, 0.18);
   border-color: #0f766e;
 }
@@ -440,6 +481,15 @@ async function sendMessage() {
 
   .chat-message {
     width: 100%;
+  }
+
+  .composer {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .model-select {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 }
 </style>

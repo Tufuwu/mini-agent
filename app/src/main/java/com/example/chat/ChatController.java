@@ -1,5 +1,7 @@
 package com.example.chat;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -20,15 +22,15 @@ public class ChatController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> chat(@RequestBody ChatRequest request) {
+    public ResponseEntity<?> chat(@RequestBody ChatRequest request) {
         log.info("recieve:{}", request);
         if (request == null || request.getMessage() == null || request.getMessage().trim().isEmpty()) {
             return ResponseEntity.badRequest()
-                    .body("{\"error\":\"message is required\"}");
+                    .body(Map.of("error", "message is required"));
         }
 
         // String result = chatService.chat(request);
-        String result = "{\"reply\":\"recieved" + request.getMessage() + "\"}";
+        Map<String, String> result = Map.of("answer", "recieved" + request.getMessage());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(result);
