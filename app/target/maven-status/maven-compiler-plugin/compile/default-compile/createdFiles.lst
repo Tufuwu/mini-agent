@@ -1,0 +1,3 @@
+com\example\user\UserRepository.class
+com\example\auth\RegisterRequest.class
+com\example\user\User.class
