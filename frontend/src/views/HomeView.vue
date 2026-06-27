@@ -26,12 +26,19 @@ interface ChatMessage {
   time: string
 }
 
+interface ChatResponse {
+  answer?: string
+  error?: string
+  detail?: string
+}
+
 const conversations = ref<Conversation[]>([
 
 ])
 
 const activeConversationId = ref(1)
 const draft = ref('')
+const isSending = ref(false)
 const messages = ref<ChatMessage[]>([
 
 ])
@@ -57,10 +64,10 @@ function selectConversation(id: number) {
   activeConversationId.value = id
 }
 
-function sendMessage() {
+async function sendMessage() {
   const content = draft.value.trim()
 
-  if (!content) {
+  if (!content || isSending.value) {
     return
   }
 
@@ -78,17 +85,41 @@ function sendMessage() {
   })
 
   draft.value = ''
+  isSending.value = true
 
-  window.setTimeout(() => {
+  try {
+    const response = await fetch('/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: content,
+      }),
+    })
+
+    const data = (await response.json()) as ChatResponse
+
+    if (!response.ok) {
+      throw new Error(data.error || data.detail || 'Chat request failed')
+    }
+
     messages.value.push({
       id: Date.now() + 1,
       role: 'assistant',
-      content: props.isAuthenticated
-        ? `Received: ${content}`
-        : 'Please sign in to connect this message to your account.',
+      content: data.answer || 'No response content.',
       time,
     })
-  }, 300)
+  } catch (error) {
+    messages.value.push({
+      id: Date.now() + 1,
+      role: 'assistant',
+      content: error instanceof Error ? error.message : 'Chat request failed',
+      time,
+    })
+  } finally {
+    isSending.value = false
+  }
 }
 </script>
 
@@ -159,8 +190,8 @@ function sendMessage() {
       </div>
 
       <form class="composer" @submit.prevent="sendMessage">
-        <input v-model="draft" placeholder="Type a message..." type="text" />
-        <button type="submit">Send</button>
+        <input v-model="draft" :disabled="isSending" placeholder="Type a message..." type="text" />
+        <button :disabled="isSending" type="submit">{{ isSending ? 'Sending...' : 'Send' }}</button>
       </form>
     </section>
   </main>
@@ -371,6 +402,12 @@ function sendMessage() {
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font: inherit;
+}
+
+.composer input:disabled,
+.composer button:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .composer input:focus {

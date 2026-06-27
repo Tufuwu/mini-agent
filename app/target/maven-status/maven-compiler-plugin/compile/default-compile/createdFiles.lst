@@ -1,3 +1,6 @@
-com\example\user\UserRepository.class
 com\example\auth\RegisterRequest.class
+com\example\chat\ChatRequest.class
+com\example\user\UserRepository.class
+com\example\chat\ChatService.class
 com\example\user\User.class
+com\example\chat\ChatController.class

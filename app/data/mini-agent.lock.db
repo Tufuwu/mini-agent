@@ -1,0 +1,6 @@
+#FileLock
+#Sat Jun 27 20:47:14 CST 2026
+hostName=windows10.microdone.cn
+id=19f091eafee24b5d736f5f9c7045a09057cf2ea0f14
+method=file
+server=10.10.65.8\:51308
